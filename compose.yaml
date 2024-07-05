@@ -1,0 +1,53 @@
+services:
+    server:
+        container_name: server
+        image: 'nginx'
+        working_dir: /app
+        volumes:
+            - './app:/app'
+            - './.docker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf'
+        ports:
+            - '80:80'
+        networks:
+            network_app:
+            default:
+                aliases:
+                    - localhost
+        depends_on:
+            - app
+
+    app:
+        container_name: app
+        build: ./.docker/php
+        working_dir: /app
+        volumes:
+            - ./app:/app
+        networks:
+            network_db:
+            network_app:
+            default:
+                aliases:
+                    - localhost
+        depends_on:
+            - db
+
+    db:
+        container_name: db
+        image: 'postgres'
+        environment:
+            - POSTGRES_USER=root
+            - POSTGRES_PASSWORD=paris
+            - POSTGRES_DB=app
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        ports:
+            - '5432:5432'
+        networks:
+            network_db:
+
+networks:
+    network_db:
+    network_app:
+
+volumes:
+    postgres_data:
